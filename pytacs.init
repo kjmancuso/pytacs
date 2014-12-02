@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+# pytacs - Starts PyTACS Server
+#
+#
+# chkconfig: 2345 13 87
+# description: Python TACACS+ Server
+# pidfile: /var/run/pytacs.pid
+
+# Source function library.
+. /etc/init.d/functions
+
+DIR=/opt/pytacs
+PROG=pytacs
+LOCKFILE=/var/lock/subsys/${PROG}
+PIDFILE=/var/run/${PROG}.pid
+OPTIONS=""
+
+[ -f /etc/sysconfig/pytacs ] && . /etc/sysconfig/pytacs
+
+RETVAL=0
+
+umask 077
+
+start() {
+ 	echo -n $"Starting $PROG: "
+	daemon ${DIR}/${PROG} ${OPTIONS}
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && touch $LOCKFILE
+	return $RETVAL
+}	
+stop() {
+	echo -n $"Shutting down $PROG: "
+	killproc pytacs
+	echo
+	[ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+	return $RETVAL
+}
+rhstatus() {
+	status $PROG
+}
+restart() {
+	stop
+	start
+}	
+
+case "$1" in
+  start)
+  	start
+	;;
+  stop)
+  	stop
+	;;
+  status)
+  	rhstatus
+	;;
+  restart|reload)
+  	restart
+	;;
+  condrestart)
+  	[ -f $LOCKFILE ] && restart || :
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart|condrestart}"
+	exit 1
+esac
+
+exit $?
+

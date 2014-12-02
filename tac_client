@@ -1,0 +1,22 @@
+#!/usr/bin/python
+
+import pytacs.Packet as Packet
+import socket
+import random
+
+server = "127.0.0.1"
+port = 49
+secret = "secret"
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect((server, port))
+sock.settimeout(2)
+
+packet = Packet.Authentication(secret)
+packet._body = "Wibble=wibble"
+packet._seq_no = 1
+packet._session_id = random.randint(1,65535)
+sock.send(packet.encode())
+
+response = Packet.Packet.decode(sock.recv(4096), secret)
+print str(response)
